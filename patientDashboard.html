@@ -1,0 +1,111 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard | Graphene Trace</title>
+    <link rel="stylesheet" href="patient.css">
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo">Graphene Trace</div>
+
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="login.html">Logout</a>
+        </nav>
+    </header>
+
+    <!-- MAIN DASHBOARD LAYOUT -->
+    <div class="dashboard-container">
+
+        <!-- LEFT COLUMN -->
+        <div class="left-column">
+
+            <!-- PATIENT INFO -->
+            <section class="card profile">
+                <h2>Patient Information</h2>
+                <p><strong>Name:</strong> John Doe</p>
+                <p><strong>Age:</strong> 42</p>
+                <p><strong>Condition:</strong> Plantar Fasciitis</p>
+                <p><strong>Last Updated:</strong> Today</p>
+
+                <div class="status">
+                    <span class="status-dot"></span> Status: Stable
+                </div>
+            </section>
+
+            <!-- METRICS -->
+            <section class="card metrics">
+                <h2>Current Metrics</h2>
+                <p><strong>Peak Pressure:</strong> <span id="metric-peak">—</span></p>
+                <p><strong>Peak Location:</strong> <span id="metric-location">—</span></p>
+                <p><strong>Contact Area:</strong> <span id="metric-contact">—</span>%</p>
+            </section>
+
+            <!-- EMERGENCY -->
+            <section class="card emergency">
+                <h2>Emergency Contact</h2>
+                <p>If you experience severe pain or inability to walk:</p>
+                <p class="emergency-number">📞 0800 555 999</p>
+            </section>
+
+            <!-- CONTACT CLINICIAN -->
+            <section class="card contact">
+                <h2>Contact Clinician</h2>
+                <p><strong>Assigned:</strong> Dr. Sarah Patel</p>
+                <textarea placeholder="Write a message to your clinician..."></textarea>
+                <button class="btn-primary">Send Message</button>
+            </section>
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="right-column">
+
+            <!-- HEATMAP -->
+            <section class="card heatmap">
+                <h2>Pressure Heatmap</h2>
+                <div class="heatmap-display">
+                    <!-- Heatmap image or canvas goes here -->
+                    <p class="placeholder">Heatmap Frame Display</p>
+                </div>
+
+                <label>Frame Selector</label>
+                <input type="range" min="1" max="50" value="1" class="slider" id="frameSlider">
+                <p>Selected Frame: <span id="frameNumber">1</span></p>
+            </section>
+
+            <!-- PRESSURE TREND -->
+            <section class="card trend">
+                <h2>Pressure Trend Over Time</h2>
+                <div class="trend-chart">
+                    <p class="placeholder">Trend Chart Placeholder</p>
+                </div>
+            </section>
+
+            <!-- NOTES -->
+            <section class="card notes">
+                <h2>Notes & Comments</h2>
+                <textarea placeholder="Add your notes..."></textarea>
+                <button class="btn-primary">Save Notes</button>
+            </section>
+
+        </div>
+
+    </div>
+
+    <script>
+        // Update frame number display
+        const slider = document.getElementById("frameSlider");
+        const frameLabel = document.getElementById("frameNumber");
+
+        slider.oninput = function() {
+            frameLabel.textContent = this.value;
+        };
+    </script>
+
+</body>
+</html>
