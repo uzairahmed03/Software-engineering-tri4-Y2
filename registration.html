@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Graphene Trace</title>
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+
+    <div class="auth-container">
+        <h2>Create an Account</h2>
+
+        <form id="registerForm">
+
+            <label>Full Name</label>
+            <input type="text" id="name" placeholder="Enter your full name" required>
+
+            <label>Email</label>
+            <input type="email" id="regEmail" placeholder="Enter your email" required>
+
+            <label>Password</label>
+            <input type="password" id="regPassword" placeholder="Create a password" required>
+
+            <label>Account Type</label>
+            <select id="role" required>
+                <option value="">Select role</option>
+                <option value="admin">Admin</option>
+                <option value="clinician">Clinician</option>
+                <option value="patient">Patient</option>
+            </select>
+
+            <button type="submit" class="btn-primary">Register</button>
+
+            <p class="switch-link">
+                Already have an account? <a href="login.html">Log in</a>
+            </p>
+
+        </form>
+
+        <p id="successMsg" class="success"></p>
+    </div>
+
+    <script>
+document.getElementById("registerForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    document.getElementById("successMsg").textContent =
+        "Registration successful! Redirecting to login...";
+
+    setTimeout(() => {
+        window.location.href = "login.html";
+    }, 1500);
+});
+    </script>
+
+</body>
+</html>
