@@ -3,109 +3,253 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Dashboard | Graphene Trace</title>
-    <link rel="stylesheet" href="patient.css">
+    <title>GrapheneTrace - Patient Dashboard</title>
+
+    <style>
+        /* GLOBAL ------------------------------------------------------ */
+        body {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background: #1a0f2e;
+            color: #e3dffa;
+        }
+
+        /* TOPBAR ------------------------------------------------------ */
+        .topbar {
+            background: #2c1a47;
+            padding: 18px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #d8b4fe;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+        }
+
+            .topbar h1 {
+                margin: 0;
+                font-size: 22px;
+            }
+
+        .btn-logout {
+            background: #7c3aed;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+            .btn-logout:hover {
+                background: #6d28d9;
+            }
+
+        /* MAIN GRID --------------------------------------------------- */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1.1fr 1.3fr;
+            gap: 25px;
+            padding: 30px;
+        }
+
+        /* GLASS CARDS ------------------------------------------------ */
+        .card {
+            background: rgba(255,255,255,0.06);
+            padding: 22px;
+            border-radius: 14px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+            .card h2 {
+                margin-top: 0;
+                color: #d8b4fe;
+            }
+
+        /* PROFILE CARD ---------------------------------------------- */
+        .profile-info p {
+            font-size: 16px;
+            margin: 6px 0;
+        }
+
+        /* METRICS ----------------------------------------------------- */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .metric-block {
+            text-align: center;
+            padding: 18px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+
+            .metric-block h3 {
+                margin-bottom: 10px;
+                color: #c084fc;
+            }
+
+            .metric-block p {
+                font-size: 22px;
+            }
+
+        /* HEATMAP & SLIDER ------------------------------------------- */
+        .heatmap-container {
+            height: 280px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #c084fc;
+            font-size: 20px;
+        }
+
+        .slider {
+            width: 100%;
+        }
+
+        /* ALERTS ------------------------------------------------------ */
+        .alert-box {
+            background: rgba(255, 0, 0, 0.1);
+            border-left: 4px solid #ff6b6b;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+        }
+
+        /* CONTACT SECTION -------------------------------------------- */
+        .contact-card input, .contact-card textarea {
+            width: 100%;
+            padding: 12px;
+            background: #2c1a47;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        /* EMERGENCY CARD -------------------------------------------- */
+        .emergency {
+            background: rgba(255,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            padding: 20px;
+        }
+
+            .emergency h3 {
+                color: #ff6b6b;
+                margin-bottom: 6px;
+            }
+
+        /* NOTES SECTION --------------------------------------------- */
+        textarea {
+            width: 100%;
+            padding: 12px;
+            background: #2c1a47;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            color: white;
+            height: 120px;
+        }
+
+        /* BUTTONS ----------------------------------------------------- */
+        .btn {
+            background: #7c3aed;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+            .btn:hover {
+                background: #6d28d9;
+            }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #a78bfa;
+        }
+    </style>
 </head>
+
 <body>
 
-    <!-- HEADER -->
-    <header>
-        <div class="logo">Graphene Trace</div>
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <h1>Patient Dashboard</h1>
+        <button class="btn-logout" onclick="location.href='index.html'">Logout</button>
+    </div>
 
-        <nav>
-            <a href="index.html">Home</a>
-            <a href="login.html">Logout</a>
-        </nav>
-    </header>
+    <!-- DASHBOARD GRID -->
+    <div class="dashboard">
 
-    <!-- MAIN DASHBOARD LAYOUT -->
-    <div class="dashboard-container">
+        <!-- LEFT SECTION -->
+        <div class="left">
 
-        <!-- LEFT COLUMN -->
-        <div class="left-column">
-
-            <!-- PATIENT INFO -->
-            <section class="card profile">
+            <!-- PATIENT PROFILE -->
+            <div class="card profile-info">
                 <h2>Patient Information</h2>
                 <p><strong>Name:</strong> John Doe</p>
                 <p><strong>Age:</strong> 42</p>
                 <p><strong>Condition:</strong> Plantar Fasciitis</p>
-                <p><strong>Last Updated:</strong> Today</p>
-
-                <div class="status">
-                    <span class="status-dot"></span> Status: Stable
-                </div>
-            </section>
+                <p><strong>Assigned Clinician:</strong> Dr. Smith</p>
+            </div>
 
             <!-- METRICS -->
-            <section class="card metrics">
-                <h2>Current Metrics</h2>
-                <p><strong>Peak Pressure:</strong> <span id="metric-peak">—</span></p>
-                <p><strong>Peak Location:</strong> <span id="metric-location">—</span></p>
-                <p><strong>Contact Area:</strong> <span id="metric-contact">—</span>%</p>
-            </section>
+            <div class="card">
+                <h2>Latest Metrics</h2>
+
+                <div class="metrics-grid">
+                    <div class="metric-block">
+                        <h3>Peak Pressure</h3>
+                        <p>178</p>
+                    </div>
+
+                    <div class="metric-block">
+                        <h3>Contact Area</h3>
+                        <p>23%</p>
+                    </div>
+
+                    <div class="metric-block">
+                        <h3>Frame Count</h3>
+                        <p>740</p>
+                    </div>
+                </div>
+            </div>
 
             <!-- EMERGENCY -->
-            <section class="card emergency">
-                <h2>Emergency Contact</h2>
-                <p>If you experience severe pain or inability to walk:</p>
-                <p class="emergency-number">📞 0800 555 999</p>
-            </section>
-
-            <!-- CONTACT CLINICIAN -->
-            <section class="card contact">
-                <h2>Contact Clinician</h2>
-                <p><strong>Assigned:</strong> Dr. Sarah Patel</p>
-                <textarea placeholder="Write a message to your clinician..."></textarea>
-                <button class="btn-primary">Send Message</button>
-            </section>
+            <div class="card emergency">
+                <h3>Emergency Contact</h3>
+                <p>📞 +44 0208 555 9111</p>
+            </div>
 
         </div>
 
-        <!-- RIGHT COLUMN -->
-        <div class="right-column">
+        <!-- RIGHT SECTION -->
+        <div class="right">
 
             <!-- HEATMAP -->
-            <section class="card heatmap">
-                <h2>Pressure Heatmap</h2>
-                <div class="heatmap-display">
-                    <!-- Heatmap image or canvas goes here -->
-                    <p class="placeholder">Heatmap Frame Display</p>
+            <div class="card">
+                <h2>Heatmap & Frame Viewer</h2>
+
+                <div class="heatmap-container">
+                    Heatmap Preview (32×32)
                 </div>
 
-                <label>Frame Selector</label>
-                <input type="range" min="1" max="50" value="1" class="slider" id="frameSlider">
-                <p>Selected Frame: <span id="frameNumber">1</span></p>
-            </section>
+                <input type="range" min="1" max="32" value="1" class="slider">
+            </div>
 
             <!-- PRESSURE TREND -->
-            <section class="card trend">
-                <h2>Pressure Trend Over Time</h2>
-                <div class="trend-chart">
-                    <p class="placeholder">Trend Chart Placeholder</p>
-                </div>
-            </section>
-
-            <!-- NOTES -->
-            <section class="card notes">
-                <h2>Notes & Comments</h2>
-                <textarea placeholder="Add your notes..."></textarea>
-                <button class="btn-primary">Save Notes</button>
-            </section>
-
-        </div>
-
-    </div>
-
-    <script>
-        // Update frame number display
-        const slider = document.getElementById("frameSlider");
-        const frameLabel = document.getElementById("frameNumber");
-
-        slider.oninput = function() {
-            frameLabel.textContent = this.value;
-        };
-    </script>
-
-</body>
-</html>
+            <div class="card">
+                <h2>Pressure Trend</h2>
+                <div class="heatmap-c

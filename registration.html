@@ -3,56 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register | Graphene Trace</title>
-    <link rel="stylesheet" href="auth.css">
+    <title>GrapheneTrace - Register</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background: #1a0f2e;
+            color: #e3dffa;
+        }
+
+        .container {
+            max-width: 450px;
+            margin: 90px auto;
+            padding: 30px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            color: #d8b4fe;
+            margin-bottom: 20px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 18px;
+            background: #2c1a47;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 15px;
+        }
+
+            input::placeholder {
+                color: #bda7e6;
+            }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #c084fc;
+            border: none;
+            border-radius: 8px;
+            color: #2c1a47;
+            font-size: 17px;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(192,132,252,0.4);
+            font-weight: bold;
+        }
+
+            .btn:hover {
+                background: #a855f7;
+            }
+
+        .link {
+            margin-top: 15px;
+            display: block;
+            color: #c084fc;
+            text-decoration: none;
+        }
+
+            .link:hover {
+                text-decoration: underline;
+            }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #a78bfa;
+            font-size: 14px;
+        }
+    </style>
 </head>
+
 <body>
 
-    <div class="auth-container">
-        <h2>Create an Account</h2>
+    <div class="container">
+        <h1>Create Account</h1>
 
-        <form id="registerForm">
+        <input type="text" placeholder="Full Name">
+        <input type="email" placeholder="Email">
+        <input type="password" placeholder="Password">
 
-            <label>Full Name</label>
-            <input type="text" id="name" placeholder="Enter your full name" required>
+        <select>
+            <option>Select Role</option>
+            <option>Admin</option>
+            <option>Clinician</option>
+            <option>Patient</option>
+        </select>
 
-            <label>Email</label>
-            <input type="email" id="regEmail" placeholder="Enter your email" required>
+        <button class="btn">Register</button>
 
-            <label>Password</label>
-            <input type="password" id="regPassword" placeholder="Create a password" required>
-
-            <label>Account Type</label>
-            <select id="role" required>
-                <option value="">Select role</option>
-                <option value="admin">Admin</option>
-                <option value="clinician">Clinician</option>
-                <option value="patient">Patient</option>
-            </select>
-
-            <button type="submit" class="btn-primary">Register</button>
-
-            <p class="switch-link">
-                Already have an account? <a href="login.html">Log in</a>
-            </p>
-
-        </form>
-
-        <p id="successMsg" class="success"></p>
+        <a href="login.html" class="link">Already have an account? Login</a>
     </div>
 
-    <script>
-document.getElementById("registerForm").addEventListener("submit", function(event) {
-    event.preventDefault();
-
-    document.getElementById("successMsg").textContent =
-        "Registration successful! Redirecting to login...";
-
-    setTimeout(() => {
-        window.location.href = "login.html";
-    }, 1500);
-});
-    </script>
+    <footer>
+        © 2025 GrapheneTrace
+    </footer>
 
 </body>
 </html>
