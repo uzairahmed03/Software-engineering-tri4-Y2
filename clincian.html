@@ -1,0 +1,965 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>GrapheneTrace — Clinician Dashboard</title>
+
+    <style>
+        :root {
+            --bg: #1a0f2e;
+            --panel: #2c1a47;
+            --muted: rgba(255,255,255,0.08);
+            --glass: rgba(255,255,255,0.04);
+            --accent: #c084fc;
+            --accent-2: #7c3aed;
+            --text: #eae3ff;
+            --card-border: rgba(255,255,255,0.08);
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: "Segoe UI",system-ui,Arial;
+            background: var(--bg);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none
+        }
+
+        /* Layout */
+        .app {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+            padding: 22px;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR - patient list + alerts */
+        .sidebar {
+            background: linear-gradient(180deg,var(--panel), #341a55);
+            border-radius: 14px;
+            padding: 18px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+            height: calc(100vh - 44px);
+            overflow: auto;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px
+        }
+
+        .logo-dot {
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            background: linear-gradient(135deg,#7c3aed, #c084fc);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700
+        }
+
+        .brand h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #f6eeff
+        }
+
+        .small {
+            font-size: 13px;
+            opacity: 0.85;
+            color: #f3eaff;
+            margin-top: 4px
+        }
+
+        .search {
+            margin: 10px 0 16px;
+            display: flex;
+            gap: 8px
+        }
+
+            .search input {
+                flex: 1;
+                padding: 10px;
+                border-radius: 10px;
+                border: 1px solid var(--card-border);
+                background: #2a153f;
+                color: var(--text)
+            }
+
+        .patient-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        .patient-card {
+            background: var(--glass);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: transform .12s,background .12s;
+        }
+
+            .patient-card:hover {
+                transform: translateY(-4px)
+            }
+
+            .patient-card.active {
+                outline: 2px solid rgba(192,132,252,0.18);
+                box-shadow: 0 6px 18px rgba(124,58,237,0.12);
+                background: rgba(255,255,255,0.03)
+            }
+
+        .avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 8px;
+            background: linear-gradient(135deg,#5b2e91,#7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700
+        }
+
+        .p-meta {
+            flex: 1
+        }
+
+            .p-meta h4 {
+                margin: 0;
+                font-size: 15px
+            }
+
+            .p-meta p {
+                margin: 3px 0 0;
+                color: #decffb;
+                font-size: 13px;
+                opacity: 0.9
+            }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px
+        }
+
+        .status-ok {
+            background: #2ecc71
+        }
+
+        .status-warn {
+            background: #facc15
+        }
+
+        .status-bad {
+            background: #ff6b6b
+        }
+
+        .alerts-mini {
+            margin-top: 18px
+        }
+
+            .alerts-mini h4 {
+                margin: 0 0 8px 0;
+                color: var(--accent);
+                font-size: 13px
+            }
+
+        .alert-mini {
+            background: rgba(255,255,255,0.03);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid var(--card-border);
+            font-size: 13px
+        }
+
+        /* MAIN AREA */
+        .main {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            min-height: calc(100vh - 44px);
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            border-radius: 12px;
+            background: linear-gradient(90deg,#2c1a47,#371c57);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+        }
+
+            .topbar h2 {
+                margin: 0;
+                font-size: 18px;
+                color: var(--accent)
+            }
+
+            .topbar .actions {
+                display: flex;
+                gap: 12px;
+                align-items: center
+            }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 20px;
+        }
+
+        /* Left column - patient detail */
+        .left-col {
+            display: flex;
+            flex-direction: column;
+            gap: 18px
+        }
+
+        .card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+
+        .profile {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+            .profile .big-avatar {
+                width: 72px;
+                height: 72px;
+                border-radius: 12px;
+                background: linear-gradient(135deg,#7c3aed,#c084fc);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 20px
+            }
+
+            .profile .info h3 {
+                margin: 0 0 6px 0
+            }
+
+        .pill {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.03);
+            font-size: 13px;
+            color: #e9d8ff;
+            border: 1px solid rgba(255,255,255,0.04)
+        }
+
+        /* metrics row */
+        .metrics-row {
+            display: flex;
+            gap: 12px
+        }
+
+        .metric {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.03);
+            text-align: center;
+            border: 1px solid var(--card-border)
+        }
+
+            .metric h4 {
+                margin: 0;
+                color: var(--accent);
+                font-size: 14px
+            }
+
+            .metric p {
+                margin: 6px 0 0;
+                font-size: 20px
+            }
+
+        /* heatmap area + controls */
+        .heatmap-wrap {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start
+        }
+
+        .heatmap-canvas {
+            background: #12061a;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center
+        }
+
+        canvas.heat {
+            display: block;
+            background: #0e0820;
+            border-radius: 6px
+        }
+
+        .controls {
+            width: 100%;
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+            .controls input[type=range] {
+                flex: 1
+            }
+
+        .btn-small {
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: none;
+            background: var(--accent-2);
+            color: white;
+            cursor: pointer
+        }
+
+        /* trend chart */
+        .chart {
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+            border-radius: 10px;
+            border: 1px solid var(--card-border)
+        }
+
+        /* right column - side widgets */
+        .right-col {
+            display: flex;
+            flex-direction: column;
+            gap: 14px
+        }
+
+        .messages {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 280px;
+            overflow: auto;
+            padding: 12px
+        }
+
+        .message {
+            background: rgba(255,255,255,0.03);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            font-size: 14px
+        }
+
+        .compose {
+            display: flex;
+            gap: 8px
+        }
+
+            .compose input {
+                flex: 1;
+                padding: 10px;
+                border-radius: 8px;
+                border: 1px solid var(--card-border);
+                background: #2c1a47;
+                color: var(--text)
+            }
+
+        .recommendations ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px
+        }
+
+        .recommendations li {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: rgba(255,255,255,0.02);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border)
+        }
+
+        .rec-check {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            background: #2c1a47;
+            border: 1px solid var(--card-border);
+            display: inline-block;
+            cursor: pointer
+        }
+
+        .device-status p {
+            margin: 8px 0 0 0;
+            font-size: 14px
+        }
+
+        /* responsiveness */
+        @media (max-width:1000px) {
+            .app {
+                grid-template-columns: 1fr;
+                padding: 12px
+            }
+
+            .sidebar {
+                height: auto;
+                order: 2
+            }
+
+            .main {
+                order: 1
+            }
+
+            .content {
+                grid-template-columns: 1fr
+            }
+
+            .right-col {
+                order: 2
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="brand">
+                <div class="logo-dot">GT</div>
+                <div>
+                    <h3>GrapheneTrace</h3>
+                    <div class="small">Clinician Dashboard</div>
+                </div>
+            </div>
+
+            <div class="search">
+                <input id="searchBox" placeholder="Search patients..." oninput="filterPatients()" />
+            </div>
+
+            <div class="patient-list" id="patientList">
+                <!-- patient items populated by JS -->
+            </div>
+
+            <div class="alerts-mini">
+                <h4>Recent Alerts</h4>
+                <div id="miniAlerts"></div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main">
+            <div class="topbar">
+                <h2 id="clinicTitle">Clinic: Community Health Unit</h2>
+                <div class="actions">
+                    <div class="pill" id="clinicianName">Dr. Sarah Patel</div>
+                    <button class="btn" onclick="exportPatientMetrics()">Export Metrics</button>
+                </div>
+            </div>
+
+            <div class="content">
+                <!-- left column -->
+                <div class="left-col">
+
+                    <!-- Patient header -->
+                    <div class="card profile">
+                        <div class="big-avatar" id="bigAvatar">JD</div>
+                        <div class="info">
+                            <h3 id="pName">John Doe</h3>
+                            <div class="pill" id="pStatus"><span class="status-dot status-ok"></span> Stable</div>
+                            <p style="margin-top:8px;color:#dcd1ff" id="pLast">Last update: —</p>
+                        </div>
+                    </div>
+
+                    <!-- Metrics -->
+                    <div class="card">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <h3 style="margin:0;color:var(--accent)">Latest Summary</h3>
+                            <div style="font-size:13px;color:#cdb6ff">Device: <strong id="deviceStatus">Online</strong></div>
+                        </div>
+
+                        <div style="height:12px"></div>
+                        <div class="metrics-row">
+                            <div class="metric">
+                                <h4>Peak Pressure</h4>
+                                <p id="mPeak">—</p>
+                            </div>
+                            <div class="metric">
+                                <h4>Contact Area</h4>
+                                <p id="mContact">— %</p>
+                            </div>
+                            <div class="metric">
+                                <h4>Frames</h4>
+                                <p id="mFrames">—</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Heatmap & controls -->
+                    <div class="card">
+                        <h3 style="margin-top:0;color:var(--accent)">Heatmap & Replay</h3>
+
+                        <div class="heatmap-wrap">
+                            <div class="heatmap-canvas" style="flex:1">
+                                <canvas id="heatCanvas" class="heat" width="320" height="320"></canvas>
+                                <div class="controls">
+                                    <button class="btn-small" id="playBtn" onclick="togglePlay()">Play ▶</button>
+                                    <input type="range" id="frameSlider" min="0" max="0" value="0" oninput="seekFrame(this.value)" />
+                                    <div style="width:10px"></div>
+                                    <div style="min-width:110px;text-align:right;color:#e8dfff;font-size:13px">Frame: <span id="frameIndex">0</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trend chart -->
+                    <div class="card">
+                        <h3 style="margin-top:0;color:var(--accent)">Pressure Trend — Last 30 sessions</h3>
+                        <div class="chart">
+                            <canvas id="trendChart" width="700" height="160"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Alerts history -->
+                    <div class="card">
+                        <h3 style="margin-top:0;color:var(--accent)">Alert History</h3>
+                        <div id="alertHistory" style="display:flex;flex-direction:column;gap:8px;margin-top:12px"></div>
+                    </div>
+
+                </div>
+
+                <!-- right column -->
+                <aside class="right-col">
+
+                    <!-- Messages -->
+                    <div class="card">
+                        <h3 style="margin-top:0;color:var(--accent)">Messages</h3>
+                        <div class="messages" id="messagesBox">
+                            <!-- messages appended -->
+                        </div>
+
+                        <div class="compose">
+                            <input id="msgInput" placeholder="Write message to patient..." />
+                            <button class="btn-small" onclick="sendMessage()">Send</button>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations -->
+                    <div class="card recommendations">
+                        <h3 style="margin-top:0;color:var(--accent)">Treatment & Exercises</h3>
+                        <ul>
+                            <li><label><input type="checkbox" class="rec" data-text="Daily calf stretch (3x/day)" /> Daily calf stretch (3×/day)</label></li>
+                            <li><label><input type="checkbox" class="rec" data-text="Limit high-impact activity for 2 weeks" /> Limit high-impact activity (2 weeks)</label></li>
+                            <li><label><input type="checkbox" class="rec" data-text="Wear cushioned insoles" /> Wear cushioned insoles</label></li>
+                            <li><label><input type="checkbox" class="rec" data-text="Follow up in 2 weeks" /> Follow-up in 2 weeks</label></li>
+                        </ul>
+                        <button class="btn" style="margin-top:12px" onclick="saveRecs()">Save</button>
+                    </div>
+
+                    <!-- Device status -->
+                    <div class="card device-status">
+                        <h3 style="margin-top:0;color:var(--accent)">Device Status</h3>
+                        <p>Battery: <strong id="battery">—%</strong></p>
+                        <p>Last upload: <strong id="lastUpload">—</strong></p>
+                        <p>Connectivity: <strong id="connectivity">—</strong></p>
+                    </div>
+
+                </aside>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+/* ---------------------------
+   Mock data + UI population
+   --------------------------- */
+
+const patients = [
+  {id:1,name:"John Doe",age:42,cond:"Plantar Fasciitis",status:"stable"},
+  {id:2,name:"Fatima Khan",age:29,cond:"Diabetic Neuropathy",status:"warning"},
+  {id:3,name:"Marcus Lee",age:55,cond:"Post-op rehab",status:"critical"},
+  {id:4,name:"Sophie Green",age:33,cond:"Achilles tendinopathy",status:"stable"},
+  {id:5,name:"Liam Wong",age:38,cond:"Gait abnormality",status:"warning"}
+];
+
+let activePatient = patients[0];
+let framesByPatient = {}; // holds arrays of frames (32x32)
+let metricsByPatient = {}; // holds arrays of mock metrics
+let alertsByPatient = {};
+let playing=false, playInterval=null;
+
+/* helpers to generate mock frames and metrics */
+function generateMockFrames(n=50){
+  const arr=[];
+  for(let f=0;f<n;f++){
+    const grid = [];
+    for(let r=0;r<32;r++){
+      const row=[];
+      for(let c=0;c<32;c++){
+        // create hotspots - center bias
+        const dx = (r-16), dy = (c-16);
+        const dist = Math.sqrt(dx*dx+dy*dy);
+        const base = Math.max(0, 150 - dist*6);
+        const noise = Math.round(Math.random()*40);
+        row.push(Math.max(0, Math.round(base * Math.random()) + noise));
+      }
+      grid.push(row);
+    }
+    arr.push(grid);
+  }
+  return arr;
+}
+
+function generateMockMetrics(frames){
+  return frames.map((g,idx)=>{
+    // simple derived metrics
+    let peak=0, count=0, total=0;
+    for(let r=0;r<32;r++)for(let c=0;c<32;c++){
+      const v=g[r][c]; total+=v;
+      if(v>peak) peak=v;
+      if(v>5) count++;
+    }
+    const contact = (count/(32*32))*100;
+    return {frame:idx,peak,contact:parseFloat(contact.toFixed(1)),timestamp:Date.now()-((frames.length-idx)*60000)};
+  });
+}
+
+/* populate patient list and mini alerts */
+function init(){
+  const list = document.getElementById("patientList");
+  patients.forEach(p=>{
+    // generate frames & metrics per patient
+    framesByPatient[p.id]=generateMockFrames(60 + Math.floor(Math.random()*40));
+    metricsByPatient[p.id]=generateMockMetrics(framesByPatient[p.id]);
+    alertsByPatient[p.id]=generateMockAlerts(metricsByPatient[p.id]);
+
+    const el = document.createElement("div");
+    el.className="patient-card";
+    el.dataset.id=p.id;
+    el.onclick = ()=>selectPatient(p.id);
+    el.innerHTML = `
+      <div class="avatar">${p.name.split(" ").map(x=>x[0]).slice(0,2).join("")}</div>
+      <div class="p-meta">
+        <h4>${p.name}</h4>
+        <p>${p.cond} • <small>${p.age} yrs</small></p>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;color:#dcd1ff">${getStatusDot(p.status)} ${p.status}</div>
+        <div style="font-size:12px;color:#bda7e6;margin-top:6px">${metricsByPatient[p.id][metricsByPatient[p.id].length-1].peak} peak</div>
+      </div>
+    `;
+    list.appendChild(el);
+  });
+
+  // fill mini alerts
+  refreshMiniAlerts();
+
+  // select first patient
+  selectPatient(patients[0].id);
+}
+
+function getStatusDot(status){
+  if(status==="stable") return '<span class="status-dot status-ok"></span>';
+  if(status==="warning") return '<span class="status-dot status-warn"></span>';
+  return '<span class="status-dot status-bad"></span>';
+}
+
+/* mock alerts from metrics */
+function generateMockAlerts(metrics){
+  const alerts=[];
+  metrics.forEach(m=>{
+    if(m.peak>220) alerts.push({type:"High Pressure",severity:"High",time:m.timestamp});
+    if(m.contact<5) alerts.push({type:"Low Contact",severity:"Medium",time:m.timestamp});
+  });
+  return alerts.slice(-6);
+}
+
+/* refresh mini alerts strip in sidebar */
+function refreshMiniAlerts(){
+  const mini = document.getElementById("miniAlerts"); mini.innerHTML="";
+  // collect last alerts across patients
+  const all=[];
+  for(const p of patients){
+    const al = alertsByPatient[p.id] || [];
+    al.forEach(a=>all.push({patient:p.name,type:a.type,severity:a.severity,time:a.time}));
+  }
+  all.sort((a,b)=>b.time-a.time);
+  all.slice(0,5).forEach(a=>{
+    const el = document.createElement("div");
+    el.className="alert-mini";
+    el.textContent = `${a.patient}: ${a.type} (${a.severity})`;
+    mini.appendChild(el);
+  });
+}
+
+/* select patient and render UI */
+function selectPatient(id){
+  activePatient = patients.find(p=>p.id==id);
+  document.querySelectorAll('.patient-card').forEach(c=>c.classList.remove('active'));
+  const el = document.querySelector(`.patient-card[data-id="${id}"]`);
+  if(el) el.classList.add('active');
+
+  // fill header
+  document.getElementById("pName").textContent = activePatient.name;
+  document.getElementById("bigAvatar").textContent = activePatient.name.split(" ").map(x=>x[0]).slice(0,2).join("");
+  document.getElementById("pStatus").innerHTML = (activePatient.status==="stable" ? '<span class="status-dot status-ok"></span> Stable' : activePatient.status==="warning" ? '<span class="status-dot status-warn"></span> Warning' : '<span class="status-dot status-bad"></span> Critical');
+  document.getElementById("pLast").textContent = "Last update: " + new Date().toLocaleString();
+
+  // device info (mock)
+  document.getElementById("battery").textContent = (60 + Math.floor(Math.random()*40)) + "%";
+  document.getElementById("lastUpload").textContent = new Date().toLocaleString();
+  document.getElementById("connectivity").textContent = "Online";
+
+  // metrics
+  const metrics = metricsByPatient[id];
+  const last = metrics[metrics.length-1];
+  document.getElementById("mPeak").textContent = last.peak;
+  document.getElementById("mContact").textContent = last.contact;
+  document.getElementById("mFrames").textContent = framesByPatient[id].length;
+
+  // populate alerts history
+  const ah = document.getElementById("alertHistory"); ah.innerHTML="";
+  (alertsByPatient[id]||[]).slice().reverse().forEach(a=>{
+    const div = document.createElement("div");
+    div.className="message";
+    div.textContent = `${a.type} — ${a.severity} — ${new Date(a.time).toLocaleString()}`;
+    ah.appendChild(div);
+  });
+
+  // messages
+  const messagesBox = document.getElementById("messagesBox"); messagesBox.innerHTML="";
+  const saved = JSON.parse(localStorage.getItem("msgs_"+id)||"[]");
+  saved.forEach(m=>{
+    const d = document.createElement("div"); d.className="message"; d.textContent = `${m.from}: ${m.text}`; messagesBox.appendChild(d);
+  });
+
+  // setup frames slider & heatmap
+  const frames = framesByPatient[id];
+  document.getElementById("frameSlider").max = frames.length-1;
+  document.getElementById("frameSlider").value = frames.length-1;
+  document.getElementById("frameIndex").textContent = frames.length-1;
+
+  renderHeatmap(frames[frames.length-1]);
+  renderTrendChart(metrics);
+
+  // refresh mini alerts
+  refreshMiniAlerts();
+}
+
+/* ---------------------------------
+   Heatmap rendering (canvas)
+   --------------------------------- */
+const heatCanvas = document.getElementById("heatCanvas");
+const heatCtx = heatCanvas.getContext("2d");
+function renderHeatmap(grid){
+  // grid is 32x32
+  const size = heatCanvas.width;
+  const cell = Math.floor(size/32);
+  heatCtx.clearRect(0,0,heatCanvas.width,heatCanvas.height);
+  for(let r=0;r<32;r++){
+    for(let c=0;c<32;c++){
+      const v = grid[r][c]; // 0..~300
+      // color mapping: low -> navy, mid -> purple, high -> yellow/red
+      const t = Math.min(1, v/260);
+      const color = interpolateColor([12,8,32],[120,40,180],[255, 140, 0], t);
+      heatCtx.fillStyle = colorToCss(color);
+      heatCtx.fillRect(c*cell, r*cell, cell, cell);
+    }
+  }
+}
+
+/* color helpers */
+function interpolateColor(a,b,c, t){
+  // for t<0.6 interpolate a->b, else b->c
+  if(t<=0.6){
+    const u = t/0.6;
+    return [ Math.round(a[0]+(b[0]-a[0])*u), Math.round(a[1]+(b[1]-a[1])*u), Math.round(a[2]+(b[2]-a[2])*u) ];
+  } else {
+    const u = (t-0.6)/0.4;
+    return [ Math.round(b[0]+(c[0]-b[0])*u), Math.round(b[1]+(c[1]-b[1])*u), Math.round(b[2]+(c[2]-b[2])*u) ];
+  }
+}
+function colorToCss(rgb){ return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`; }
+
+/* slider and play controls */
+document.getElementById("frameSlider").oninput = function(e){
+  seekFrame(parseInt(e.target.value));
+};
+
+function seekFrame(idx){
+  const id = activePatient.id;
+  const frames = framesByPatient[id];
+  const i = Math.max(0, Math.min(frames.length-1, idx));
+  document.getElementById("frameIndex").textContent = i;
+  renderHeatmap(frames[i]);
+}
+
+function togglePlay(){
+  if(playing){ stopPlay(); return; }
+  playing = true;
+  document.getElementById("playBtn").textContent = "Pause ⏸";
+  const id = activePatient.id;
+  const frames = framesByPatient[id];
+  let pos = parseInt(document.getElementById("frameSlider").value) || 0;
+  playInterval = setInterval(()=>{
+    pos = (pos+1) % frames.length;
+    document.getElementById("frameSlider").value = pos;
+    seekFrame(pos);
+  }, 120);
+}
+function stopPlay(){
+  playing=false;
+  document.getElementById("playBtn").textContent = "Play ▶";
+  clearInterval(playInterval);
+  playInterval=null;
+}
+
+/* ---------------------------------
+   Trend chart (simple canvas line)
+   --------------------------------- */
+function renderTrendChart(metrics){
+  const canvas = document.getElementById("trendChart");
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const w = canvas.width, h = canvas.height;
+  // prepare points
+  const pts = metrics.slice(-30).map(m=>m.peak);
+  const maxv = Math.max(...pts, 10);
+  const minv = Math.min(...pts, 0);
+  // background grid
+  ctx.fillStyle = "rgba(255,255,255,0.02)"; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle = "rgba(255,255,255,0.05)"; ctx.lineWidth=1;
+  for(let i=0;i<4;i++){ ctx.beginPath(); ctx.moveTo(0,(i+1)*(h/5)); ctx.lineTo(w,(i+1)*(h/5)); ctx.stroke(); }
+
+  // line
+  ctx.beginPath();
+  const pad = 12;
+  const usableW = w - pad*2;
+  const usableH = h - pad*2;
+  pts.forEach((v,i)=>{
+    const x = pad + (i/(pts.length-1||1))*usableW;
+    const y = pad + usableH - ((v - minv)/(maxv-minv||1))*usableH;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle = "rgba(192,132,252,0.95)";
+  ctx.lineWidth=2.5; ctx.stroke();
+
+  // gradient fill
+  ctx.lineTo(pad + usableW, pad + usableH);
+  ctx.lineTo(pad, pad + usableH);
+  ctx.closePath();
+  const g = ctx.createLinearGradient(0,pad,0,pad + usableH);
+  g.addColorStop(0,"rgba(192,132,252,0.18)");
+  g.addColorStop(1,"rgba(120,55,200,0.01)");
+  ctx.fillStyle = g;
+  ctx.fill();
+}
+
+/* ---------------------------------
+   Messaging / notes / recommendations
+   --------------------------------- */
+function sendMessage(){
+  const id = activePatient.id;
+  const text = document.getElementById("msgInput").value.trim();
+  if(!text) return;
+  const box = document.getElementById("messagesBox");
+  const m = {from:"Clinician",text,ts:Date.now()};
+  const saved = JSON.parse(localStorage.getItem("msgs_"+id)||"[]");
+  saved.push(m);
+  localStorage.setItem("msgs_"+id, JSON.stringify(saved));
+  const div = document.createElement("div"); div.className="message"; div.textContent = `You: ${text}`;
+  box.appendChild(div);
+  document.getElementById("msgInput").value="";
+  box.scrollTop = box.scrollHeight;
+}
+
+/* recommendations save (mock) */
+function saveRecs(){
+  const checks = Array.from(document.querySelectorAll(".rec")).filter(c=>c.checked).map(c=>c.dataset.text || c.parentNode.textContent.trim());
+  alert("Saved recommendations:\n\n" + (checks.length?checks.join("\n"):"(none)"));
+}
+
+/* export metrics */
+function exportPatientMetrics(){
+  const id = activePatient.id;
+  const metrics = metricsByPatient[id];
+  const frames = framesByPatient[id].length;
+  const payload = {patient:activePatient, metricsCount:metrics.length, framesCount:frames, lastMetric:metrics[metrics.length-1]};
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = `${activePatient.name.replace(" ","_")}_metrics.json`; document.body.appendChild(a); a.click();
+  a.remove(); URL.revokeObjectURL(url);
+}
+
+/* slider seek by input - already wiring done above */
+
+/* create mini alerts */
+function createRandomAlertForActive(){
+  const arr = alertsByPatient[activePatient.id] || [];
+  arr.push({type:"High Pressure",severity:"High",time:Date.now()});
+  alertsByPatient[activePatient.id]=arr;
+  const ah = document.getElementById("alertHistory");
+  const div = document.createElement("div"); div.className="message"; div.textContent = `High Pressure — High — ${new Date().toLocaleString()}`;
+  ah.prepend(div);
+  refreshMiniAlerts();
+}
+
+/* quick search */
+function filterPatients(){
+  const q = document.getElementById("searchBox").value.toLowerCase();
+  document.querySelectorAll(".patient-card").forEach(el=>{
+    const name=el.querySelector("h4").innerText.toLowerCase();
+    el.style.display = name.includes(q) ? "flex" : "none";
+  });
+}
+
+/* initial boot */
+init();
+
+/* expose some functions for debugging from console */
+window.selectPatient = selectPatient;
+window.togglePlay = togglePlay;
+window.seekFrame = seekFrame;
+window.createRandomAlertForActive = createRandomAlertForActive;
+window.exportPatientMetrics = exportPatientMetrics;
+
+    </script>
+</body>
+</html>
