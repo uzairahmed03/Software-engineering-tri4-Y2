@@ -11,6 +11,7 @@ Administrators to manage users and oversee system activity
 The project is implemented using C# and ASP.NET Core for the backend, with HTML, CSS, and JavaScript used for the frontend dashboards.
 
 **Project Structure**
+
 GrapheneTrace/
 │
 ├── GrapheneTrace/           # ASP.NET Core backend
