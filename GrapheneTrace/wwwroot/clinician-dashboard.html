@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>GrapheneTrace — Clinician Dashboard</title>
+
+    <!-- ✅ VISUALS PRESERVED 100% -->
+    <style>
+        :root {
+            --bg: #1a0f2e;
+            --panel: #2c1a47;
+            --muted: rgba(255,255,255,0.08);
+            --glass: rgba(255,255,255,0.04);
+            --accent: #c084fc;
+            --accent-2: #7c3aed;
+            --text: #eae3ff;
+            --card-border: rgba(255,255,255,0.08);
+        }
+
+        * { box-sizing: border-box }
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: "Segoe UI",system-ui,Arial;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        a { color: inherit; text-decoration: none }
+
+        .app {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+            padding: 22px;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg,var(--panel), #341a55);
+            border-radius: 14px;
+            padding: 18px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+            height: calc(100vh - 44px);
+            overflow: auto;
+        }
+
+        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 18px }
+        .logo-dot {
+            width: 42px; height: 42px; border-radius: 8px;
+            background: linear-gradient(135deg,#7c3aed, #c084fc);
+            display: flex; align-items: center; justify-content: center; font-weight: 700
+        }
+
+        .small { font-size: 13px; opacity: 0.85 }
+
+        .search input {
+            width: 100%; padding: 10px; border-radius: 10px;
+            border: 1px solid var(--card-border); background: #2a153f; color: var(--text)
+        }
+
+        .patient-list { display: flex; flex-direction: column; gap: 10px }
+        .patient-card {
+            background: var(--glass); padding: 12px; border-radius: 10px;
+            border: 1px solid var(--card-border); display: flex; gap: 12px; cursor: pointer
+        }
+
+        .patient-card.active { outline: 2px solid rgba(192,132,252,0.25) }
+
+        .main { display: flex; flex-direction: column; gap: 18px }
+        .topbar {
+            display: flex; justify-content: space-between; padding: 14px;
+            background: linear-gradient(90deg,#2c1a47,#371c57);
+            border-radius: 12px; border: 1px solid var(--card-border)
+        }
+
+        .btn, .btn-small {
+            background: var(--accent-2); color: white;
+            border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer
+        }
+
+        .card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+            padding: 16px; border-radius: 12px; border: 1px solid var(--card-border);
+        }
+
+        .message { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; border: 1px solid var(--card-border); }
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="logo-dot">GT</div>
+            <div>
+                <h3>GrapheneTrace</h3>
+                <div class="small">Clinician Dashboard</div>
+            </div>
+        </div>
+
+        <div class="search">
+            <input id="searchBox" placeholder="Search patients..." oninput="filterPatients()" />
+        </div>
+
+        <div class="patient-list" id="patientList"></div>
+
+        <div style="margin-top:16px">
+            <button class="btn" onclick="logout()">Logout</button>
+        </div>
+    </aside>
+
+    <main class="main">
+
+        <div class="topbar">
+            <h2 id="clinicTitle">Clinic Dashboard</h2>
+            <div class="pill" id="clinicianName">Clinician</div>
+        </div>
+
+        <div class="card">
+            <h3>Selected Patient</h3>
+            <p id="pName">—</p>
+            <p id="mPeak">—</p>
+            <p id="mContact">—</p>
+        </div>
+
+        <div class="card">
+            <h3>Messages</h3>
+            <div id="messagesBox"></div>
+
+            <div style="display:flex;gap:10px;margin-top:10px">
+                <input id="msgInput" placeholder="Write message..." />
+                <button class="btn-small" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+const API = "";
+const user = JSON.parse(localStorage.getItem("loggedInUser"));
+
+// ✅ ROLE PROTECTION
+if (!user || user.role !== 2) {
+    location.href = "login.html";
+}
+
+document.getElementById("clinicianName").textContent = user.fullName;
+
+let activePatient = null;
+
+// ✅ LOAD REAL PATIENTS
+async function loadPatients() {
+    const res = await fetch(`${API}/api/patients/assigned/${user.id}`);
+    const patients = await res.json();
+
+    const list = document.getElementById("patientList");
+    list.innerHTML = "";
+
+    patients.forEach(p => {
+        const el = document.createElement("div");
+        el.className = "patient-card";
+        el.innerHTML = `<strong>${p.fullName}</strong>`;
+        el.onclick = () => selectPatient(p.id);
+        list.appendChild(el);
+    });
+}
+
+async function selectPatient(id) {
+    activePatient = id;
+
+    const res = await fetch(`${API}/api/metrics/latest/${id}`);
+    const m = await res.json();
+
+    document.getElementById("pName").textContent = m.patientName;
+    document.getElementById("mPeak").textContent = "Peak: " + m.peakPressure;
+    document.getElementById("mContact").textContent = "Contact: " + m.contactArea;
+
+    loadMessages();
+}
+
+async function loadMessages() {
+    const res = await fetch(`${API}/api/messages/${activePatient}`);
+    const msgs = await res.json();
+
+    const box = document.getElementById("messagesBox");
+    box.innerHTML = "";
+
+    msgs.forEach(m => {
+        box.innerHTML += `<div class="message">${m.sender}: ${m.text}</div>`;
+    });
+}
+
+async function sendMessage() {
+    const text = document.getElementById("msgInput").value;
+
+    await fetch(`${API}/api/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            senderId: user.id,
+            patientId: activePatient,
+            text
+        })
+    });
+
+    document.getElementById("msgInput").value = "";
+    loadMessages();
+}
+
+function filterPatients() {
+    const q = document.getElementById("searchBox").value.toLowerCase();
+    document.querySelectorAll(".patient-card").forEach(el => {
+        el.style.display = el.innerText.toLowerCase().includes(q) ? "block" : "none";
+    });
+}
+
+function logout() {
+    localStorage.clear();
+    location.href = "index.html";
+}
+
+loadPatients();
+</script>
+
+</body>
+</html>

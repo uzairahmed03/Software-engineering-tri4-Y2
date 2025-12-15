@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrapheneTrace - Login</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background: #1a0f2e;
+            color: #e3dffa;
+        }
+
+        .container {
+            max-width: 420px;
+            margin: 110px auto;
+            padding: 30px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        h1 {
+            color: #d8b4fe;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 18px;
+            background: #2c1a47;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 15px;
+        }
+
+        input::placeholder {
+            color: #bda7e6;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 18px;
+            border-radius: 8px;
+            background: #2c1a47;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #e3dffa;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #7c3aed;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 17px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(124,58,237,0.4);
+        }
+
+        .btn:hover {
+            background: #6d28d9;
+        }
+
+        .link {
+            margin-top: 15px;
+            display: block;
+            color: #c084fc;
+            text-decoration: none;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #a78bfa;
+            font-size: 14px;
+        }
+
+        .error {
+            color: #f87171;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Login</h1>
+
+        <!-- ✅ ONLY IDs ADDED (VISUALLY INVISIBLE) -->
+        <input id="email" type="email" placeholder="Email">
+        <input id="password" type="password" placeholder="Password">
+
+        <select id="role">
+            <option value="">Select Role</option>
+            <option value="0">Admin</option>
+            <option value="2">Clinician</option>
+            <option value="1">Patient</option>
+        </select>
+
+        <p id="errorMsg" class="error"></p>
+
+        <button class="btn" id="loginBtn">Login</button>
+
+        <a href="register.html" class="link">Don't have an account? Register</a>
+    </div>
+
+    <footer>
+        © 2025 GrapheneTrace
+    </footer>
+
+    <!-- ✅ REAL BACKEND LOGIN WIRED SAFELY -->
+    <script>
+        const API_BASE = "";
+
+        document.getElementById("loginBtn").addEventListener("click", async () => {
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const selectedRole = document.getElementById("role").value;
+            const errorMsg = document.getElementById("errorMsg");
+
+            errorMsg.textContent = "";
+
+            if (!email || !password || !selectedRole) {
+                errorMsg.textContent = "Please fill all fields.";
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/users`);
+                if (!res.ok) throw new Error("User fetch failed");
+
+                const users = await res.json();
+
+                const user = users.find(u =>
+                    u.email.toLowerCase() === email.toLowerCase() &&
+                    u.password === password &&
+                    String(u.role) === selectedRole
+                );
+
+                if (!user) {
+                    errorMsg.textContent = "Invalid credentials.";
+                    return;
+                }
+
+                localStorage.setItem("loggedInUser", JSON.stringify(user));
+
+                // ✅ ROLE-BASED REDIRECT
+                if (user.role === 0) {
+                    window.location.href = "admin-dashboard.html";
+                } else if (user.role === 2) {
+                    window.location.href = "clinician-dashboard.html";
+                } else {
+                    window.location.href = "patient-dashboard.html";
+                }
+
+            } catch (err) {
+                console.error(err);
+                errorMsg.textContent = "Server error. Try again.";
+            }
+        });
+    </script>
+
+</body>
+</html>

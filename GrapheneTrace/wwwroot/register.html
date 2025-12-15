@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrapheneTrace - Register</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background: #1a0f2e;
+            color: #e3dffa;
+        }
+
+        .container {
+            max-width: 450px;
+            margin: 90px auto;
+            padding: 30px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            color: #d8b4fe;
+            margin-bottom: 20px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 18px;
+            background: #2c1a47;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 15px;
+        }
+
+        input::placeholder {
+            color: #bda7e6;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #c084fc;
+            border: none;
+            border-radius: 8px;
+            color: #2c1a47;
+            font-size: 17px;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(192,132,252,0.4);
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background: #a855f7;
+        }
+
+        .link {
+            margin-top: 15px;
+            display: block;
+            color: #c084fc;
+            text-decoration: none;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #a78bfa;
+            font-size: 14px;
+        }
+
+        .error {
+            color: #f87171;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Create Account</h1>
+
+        <!-- ✅ ONLY IDs ADDED (NO VISUAL CHANGE) -->
+        <input id="fullName" type="text" placeholder="Full Name">
+        <input id="email" type="email" placeholder="Email">
+        <input id="password" type="password" placeholder="Password">
+
+        <select id="role">
+            <option value="">Select Role</option>
+            <option value="0">Admin</option>
+            <option value="2">Clinician</option>
+            <option value="1">Patient</option>
+        </select>
+
+        <p id="errorMsg" class="error"></p>
+
+        <button class="btn" id="registerBtn">Register</button>
+
+        <a href="login.html" class="link">Already have an account? Login</a>
+    </div>
+
+    <footer>
+        © 2025 GrapheneTrace
+    </footer>
+
+    <!-- ✅ REAL BACKEND REGISTRATION WIRED SAFELY -->
+    <script>
+        const API_BASE = "";
+
+        document.getElementById("registerBtn").addEventListener("click", async () => {
+            const fullName = document.getElementById("fullName").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const role = document.getElementById("role").value;
+            const errorMsg = document.getElementById("errorMsg");
+
+            errorMsg.textContent = "";
+
+            if (!fullName || !email || !password || !role) {
+                errorMsg.textContent = "All fields are required.";
+                return;
+            }
+
+            const payload = {
+                fullName: fullName,
+                email: email,
+                username: email,
+                password: password,
+                role: parseInt(role)
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/users`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) throw new Error("Registration failed");
+
+                window.location.href = "login.html";
+
+            } catch (err) {
+                console.error(err);
+                errorMsg.textContent = "Registration failed. Try again.";
+            }
+        });
+    </script>
+
+</body>
+</html>
